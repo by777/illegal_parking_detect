@@ -24,7 +24,10 @@ def get_images():
     while True:
         ret, frame = cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        detect(frame)
+        cv2.imwrite('frame.jpg',frame)
+        # cv2.imshow('frame',cv2.imread('frame.jpg'))
+        # cv2.waitKey(0)
+        detect('frame.jpg')
         key_pressed = cv2.waitKey(25)
         # ESC
         if key_pressed == 27:
