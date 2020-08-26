@@ -18,14 +18,34 @@ from utils.general import (
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
 
-def detect(save_img=False):
+def detect(save_img=False,
+           o_weights="weights/yolov5s.pt",
+           o_source="inference/images",
+           o_output="inference/output",
+           o_img_size=640,
+           o_conf_thres=0.4,
+           o_iou_thres=0.5,
+           o_fourcc="mp4v",
+           o_device='',
+           o_view_img=True,
+           o_save_txt=False,
+           o_classes=None,
+           o_agnostic_nms=False,
+           o_augment=False
+           ):
+    p = ''
+    c1 = (0, 0)
+    c2 = (0, 0)
+    label_no_value = ''
+    detection_result_list = []
+
     out, source, weights, view_img, save_txt, imgsz = \
-        opt.output, opt.source, opt.weights, opt.view_img, opt.save_txt, opt.img_size
+        o_output, o_source, o_weights, o_view_img, o_save_txt, o_img_size
     webcam = source.isnumeric() or source.startswith('rtsp') or source.startswith('http') or source.endswith('.txt')
 
     # Initialize
     set_logging()
-    device = select_device(opt.device)
+    device = select_device('cpu')
     if os.path.exists(out):
         shutil.rmtree(out)  # delete output folder
     os.makedirs(out)  # make new output folder
@@ -71,10 +91,10 @@ def detect(save_img=False):
 
         # Inference
         t1 = time_synchronized()
-        pred = model(img, augment=opt.augment)[0]
+        pred = model(img, augment=o_augment)[0]
 
         # Apply NMS
-        pred = non_max_suppression(pred, opt.conf_thres, opt.iou_thres, classes=opt.classes, agnostic=opt.agnostic_nms)
+        pred = non_max_suppression(pred, o_conf_thres, o_iou_thres, classes=o_classes, agnostic=o_agnostic_nms)
         t2 = time_synchronized()
 
         # Apply Classifier

@@ -13,7 +13,7 @@ import os
 print('Setup complete. Using torch %s %s' %
       (torch.__version__, torch.cuda.get_device_properties(0) if torch.cuda.is_available() else 'CPU'))
 
-video_path = "./inference/parking_car.mp4"
+video_path = "./inference/car.mp4"
 
 
 def get_images():
@@ -28,7 +28,8 @@ def get_images():
         # cv2.imshow('frame',cv2.imread('frame.jpg'))
         # cv2.waitKey(0)
 
-
+        with torch.no_grad():
+            detect(o_source='inference/images/frame.jpg')
         key_pressed = cv2.waitKey(25)
         # ESC
         if key_pressed == 27:
