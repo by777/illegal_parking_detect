@@ -16,6 +16,8 @@ from utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords,
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
+from timing_cars_and_bicyles import car_timing
+from car import Car
 
 '''
 weights:训练的权重
@@ -141,10 +143,9 @@ def detect(save_img=False,
             gn = torch.tensor(im0.shape)[[1, 0, 1, 0]]  # normalization gain whwh
             if det is not None and len(det):
                 # Rescale boxes from img_size to im0 size
+                # 调整预测框的坐标：基于resize+pad的图片的坐标-->基于原size图片的坐标
+                # 此时坐标格式为xyxy
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
-
-
-
 
                 # Print results
                 # for c in det[:, -1].unique():
@@ -156,18 +157,24 @@ def detect(save_img=False,
                 # 写出结果
                 for *xyxy, conf, cls in det:
                     label = '%s: %.2f' % (names[int(cls)], conf)
+                    # 输出：label: car: 0.47
+                    print("label: " + label)
                     label_no_value = '%s' % (names[int(cls)])
-                    confidences_value = '%.2f' % (conf)
-                    c1,c2=plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
+                    confidences_value = '%.2f' % conf
+                    c1, c2 = plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
                     print(c1, c2, label_no_value)
                     if label_no_value == 'car' or label_no_value == 'truck':
                         print('检测到汽车！开始计时')
+                        car = Car()
+                        car.last_position = (c1, c2)
+                        car.stop_time = time.time()
+                        car_timing(car)
                     elif label_no_value == 'bicycle' or label_no_value == 'motocycle':
                         print('检测到电动车！开始计时！')
 
-
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
+                    # 将xyxy(左上角+右下角)格式转为xywh(中心点+宽长)格式，并除上w，h做归一化，转化为列表再保存
                     if save_txt:  # Write to file
                         xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4)) / gn).view(-1).tolist()  # normalized xywh
                         with open(txt_path + '.txt', 'a') as f:
