@@ -17,6 +17,22 @@ from utils.general import (
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
+'''
+weights:训练的权重
+    source:测试数据，可以是图片/视频路径，也可以是'0'(电脑自带摄像头),也可以是rtsp等视频流
+    output:网络预测之后的图片/视频的保存路径
+    img-size:网络输入图片大小
+    conf-thres:置信度阈值
+    iou-thres:做nms的iou阈值
+    device:设置设备
+    view-img:是否展示预测之后的图片/视频，默认False
+    save-txt:是否将预测的框坐标以txt文件形式保存，默认False
+    classes:设置只保留某一部分类别，形如0或者0 2 3
+    agnostic-nms:进行nms是否也去除不同类别之间的框，默认False
+    augment:推理的时候进行多尺度，翻转等操作(TTA)推理
+    update:如果为True，则对所有模型进行strip_optimizer操作，去除pt文件中的优化器等信息，默认为False
+'''
+
 
 def detect(save_img=False,
            o_weights="weights/yolov5s.pt",
@@ -91,7 +107,18 @@ def detect(save_img=False,
 
         # Inference
         t1 = time_synchronized()
+        """
+        前向传播 返回pred的shape是(1, num_boxes, 5+num_class)
+        h,w为传入网络图片的长和宽，注意dataset在检测时使用了矩形推理，所以这里h不一定等于w
+        num_boxes = h/32 * w/32 + h/16 * w/16 + h/8 * w/8
+        pred[..., 0:4]为预测框坐标
+        预测框坐标为xywh(中心点+宽长)格式
+        pred[..., 4]为objectness置信度
+        pred[..., 5:-1]为分类结果
+        """
+
         pred = model(img, augment=o_augment)[0]
+        # print(pred[..., 5:-1])
 
         # Apply NMS
         pred = non_max_suppression(pred, o_conf_thres, o_iou_thres, classes=o_classes, agnostic=o_agnostic_nms)
@@ -116,10 +143,28 @@ def detect(save_img=False,
                 # Rescale boxes from img_size to im0 size
                 det[:, :4] = scale_coords(img.shape[2:], det[:, :4], im0.shape).round()
 
+
+
+
                 # Print results
-                for c in det[:, -1].unique():
-                    n = (det[:, -1] == c).sum()  # detections per class
-                    s += '%g %ss, ' % (n, names[int(c)])  # add to string
+                # for c in det[:, -1].unique():
+                #     n = (det[:, -1] == c).sum()  # detections per class
+                #     s += '%g %ss, ' % (n, names[int(c)])  # add to string
+                #     print(n.numpy())
+                #     detection_result_list.append(names[int(c)])
+
+                # 写出结果
+                for *xyxy, conf, cls in det:
+                    label = '%s: %.2f' % (names[int(cls)], conf)
+                    label_no_value = '%s' % (names[int(cls)])
+                    confidences_value = '%.2f' % (conf)
+                    c1,c2=plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
+                    print(c1, c2, label_no_value)
+                    if label_no_value == 'car' or label_no_value == 'truck':
+                        print('检测到汽车！开始计时')
+                    elif label_no_value == 'bicycle' or label_no_value == 'motocycle':
+                        print('检测到电动车！开始计时！')
+
 
                 # Write results
                 for *xyxy, conf, cls in reversed(det):
@@ -164,6 +209,7 @@ def detect(save_img=False,
             os.system('open ' + save_path)
 
     print('Done. (%.3fs)' % (time.time() - t0))
+    return c1, c2, label_no_value
 
 
 if __name__ == '__main__':

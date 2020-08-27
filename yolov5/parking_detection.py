@@ -29,7 +29,8 @@ def get_images():
         # cv2.waitKey(0)
 
         with torch.no_grad():
-            detect(o_source='inference/images/frame.jpg')
+            c1, c2, label_no_value = detect(o_source='inference/images/frame.jpg')
+            print(c1,c2,label_no_value)
         key_pressed = cv2.waitKey(25)
         # ESC
         if key_pressed == 27:
