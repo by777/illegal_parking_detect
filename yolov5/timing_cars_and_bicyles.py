@@ -6,6 +6,7 @@
 
 import time
 from car import Car
+
 def car_timing(car):
     print(car)
     if car.first_appear:
