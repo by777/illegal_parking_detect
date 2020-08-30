@@ -6,6 +6,15 @@
 
 import time
 from car import Car
+import cv2
+
+
+def detected_cars(time_, position, img_path):
+    car = Car()
+    car.last_position = position
+    car.stop_time = time_
+    car.img_path = img_path
+    # 开始检测是否第一次出现
 
 def car_timing(car):
     print(car)

@@ -24,13 +24,13 @@ def get_images():
     while True:
         ret, frame = cap.read()
         frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        cv2.imwrite('inference/images/frame.jpg',frame)
+        cv2.imwrite('inference/images/frame.jpg', frame)
         # cv2.imshow('frame',cv2.imread('frame.jpg'))
         # cv2.waitKey(0)
 
         with torch.no_grad():
             c1, c2, label_no_value = detect(o_source='inference/images/frame.jpg')
-            print(c1,c2,label_no_value)
+            print(c1, c2, label_no_value)
         key_pressed = cv2.waitKey(25)
         # ESC
         if key_pressed == 27:

@@ -16,7 +16,7 @@ from utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords,
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
-from timing_cars_and_bicyles import car_timing
+from timing_cars_and_bicyles import car_timing, detected_cars
 from car import Car
 
 '''
@@ -164,11 +164,20 @@ def detect(save_img=False,
                     c1, c2 = plot_one_box(xyxy, im0, label=label, color=colors[int(cls)], line_thickness=3)
                     print(c1, c2, label_no_value)
                     if label_no_value == 'car' or label_no_value == 'truck':
-                        print('检测到汽车！开始计时')
-                        car = Car()
-                        car.last_position = (c1, c2)
-                        car.stop_time = time.time()
-                        car_timing(car)
+                        print('检测到汽车！开始处理')
+                        # car = Car()
+                        # car.last_position = (c1, c2)
+                        # car.stop_time = time.time()
+                        # car_timing(car)
+
+                        # 保存图片
+                        img_name = str(time.time()).split('.')[0]
+                        img_path = os.path.join(r'vehicle_imgs\cars', img_name)+'.jpg'
+                        print("保存图片：", img_path)
+                        frame_name = o_source
+                        frame = cv2.imread(frame_name)
+                        cv2.imwrite(img_path, frame)
+                        detected_cars(time.time(), (c1, c2), img_path)
                     elif label_no_value == 'bicycle' or label_no_value == 'motocycle':
                         print('检测到电动车！开始计时！')
 
