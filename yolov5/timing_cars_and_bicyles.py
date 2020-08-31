@@ -7,6 +7,7 @@
 import time
 from car import Car
 import cv2
+
 # 暂定最大停车时长
 MAX_PARKING_TIME = 3000
 
@@ -17,13 +18,13 @@ def detected_cars(time_, position, img_path):
     car.stop_time = time_
     car.img_path = img_path
     # 开始检测是否第一次出现
-    if first_appear(car):
+    if first_appear(car, frame):
         print("第一次出现的汽车，可以暂停在停车区")
         t2 = time.time()
-        if(t2 - car.stop_time) >= MAX_PARKING_TIME:
+        if (t2 - car.stop_time) >= MAX_PARKING_TIME:
             print("违停！")
         else:
-
+            pass
 
 
 def car_timing(car):
@@ -39,5 +40,6 @@ def bicycle_timing():
     pass
 
 
-def first_appear(car):
+def first_appear(car, frame):
+    # 拿到车辆的图片在前frame里进行模板匹配，大于阈值则视为之前已存在
     return True
