@@ -18,6 +18,7 @@ def detected_cars(time_, position, img_path):
     car.stop_time = time_
     car.img_path = img_path
     # 开始检测是否第一次出现
+    frame = cv2.imread(img_path, cv2.IMREAD_GRAYSCALE)
     if first_appear(car, frame):
         print("第一次出现的汽车，可以暂停在停车区")
         t2 = time.time()
